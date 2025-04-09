@@ -1,8 +1,12 @@
 package com.taskapp.logic;
 
+import java.util.List;
+
 import com.taskapp.dataaccess.LogDataAccess;
 import com.taskapp.dataaccess.TaskDataAccess;
 import com.taskapp.dataaccess.UserDataAccess;
+import com.taskapp.model.Task;
+import com.taskapp.model.User;
 
 public class TaskLogic {
     private final TaskDataAccess taskDataAccess;
@@ -34,8 +38,26 @@ public class TaskLogic {
      * @see com.taskapp.dataaccess.TaskDataAccess#findAll()
      * @param loginUser ログインユーザー
      */
-    // public void showAll(User loginUser) {
-    // }
+    // タスクの情報を一覧表示する
+    public void showAll(User loginUser) {
+        // findAllメソッドを実行して、データの一覧取得
+        List<Task> tasks = taskDataAccess.findAll();
+        // 取得したデータを表示する
+        tasks.forEach(task ->{
+            String status = "未着手";
+            if( task.getStatus() == 1){
+                status = "着手中";
+            }else if(task.getStatus() == 2){
+                status = "完了";
+            }
+            
+            String repUser = "あなた";
+            if(task.getRepUser().getCode() == loginUser.getCode()){
+                repUser = task.getRepUser().getName() ;
+            }
+            System.out.println("タスク名：" + repUser + "が担当しています" + ", ステータス: "  + status);
+        });
+    }
 
     /**
      * 新しいタスクを保存します。
@@ -49,9 +71,15 @@ public class TaskLogic {
      * @param loginUser ログインユーザー
      * @throws AppException ユーザーコードが存在しない場合にスローされます
      */
-    // public void save(int code, String name, int repUserCode,
-    //                 User loginUser) throws AppException {
+    // CSVに書き込む
+    // public void save(int code, String name, int repUserCode,User loginUser)throws AppException {
+
+    //     }catch(IOException e){
+    //         e.printStackTrace();
+    //     }
     // }
+
+
 
     /**
      * タスクのステータスを変更します。

@@ -1,5 +1,16 @@
 package com.taskapp.dataaccess;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.taskapp.model.Task;
+import com.taskapp.model.User;
+
 public class TaskDataAccess {
 
     private final String filePath;
@@ -27,26 +38,51 @@ public class TaskDataAccess {
      * @see com.taskapp.dataaccess.UserDataAccess#findByCode(int)
      * @return タスクのリスト
      */
-    // public List<Task> findAll() {
-    //     try () {
+    public List<Task> findAll() {
+        List<Task> tasks = new ArrayList<>(); 
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            // タイトル行を読み飛ばす
+            reader.readLine();
+            while((line = reader.readLine()) != null){
+                String[] values = line.split(",");
 
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    //     return null;
-    // }
+                // CSVに間違いがあったらスキップする
+                if(values.length != 4){
+                    continue;
+                }
+                // Taskコンストラクタ(int code, String name, int status, User repUser)
+                int code = Integer.parseInt(values[0]);
+                String name = values[1];
+                int status = Integer.parseInt(values[2]);
+                // User(int code, String name, String email, String password) 
+                User repUser  = userDataAccess.findByCode(Integer.parseInt(values[3]));
+                Task task = new Task(code, name, status, repUser);
+                tasks.add(task);
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return tasks;
+    }
 
     /**
      * タスクをCSVに保存します。
      * @param task 保存するタスク
      */
-    // public void save(Task task) {
-    //     try () {
+    public void save(Task task) {
+            try(BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))){
+            String line = task.getCode() +"," + task.getName() + "," + task.getStatus() + "," + task.getRepUser();
+            // 改行を追加
+            writer.newLine();
+            // データを1行分追加
+            writer.write(line);
 
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * コードを基にタスクデータを1件取得します。
