@@ -1,10 +1,13 @@
 package com.taskapp.logic;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import com.taskapp.dataaccess.LogDataAccess;
 import com.taskapp.dataaccess.TaskDataAccess;
 import com.taskapp.dataaccess.UserDataAccess;
+import com.taskapp.exception.AppException;
+import com.taskapp.model.Log;
 import com.taskapp.model.Task;
 import com.taskapp.model.User;
 
@@ -12,7 +15,6 @@ public class TaskLogic {
     private final TaskDataAccess taskDataAccess;
     private final LogDataAccess logDataAccess;
     private final UserDataAccess userDataAccess;
-
 
     public TaskLogic() {
         taskDataAccess = new TaskDataAccess();
@@ -22,6 +24,7 @@ public class TaskLogic {
 
     /**
      * 自動採点用に必要なコンストラクタのため、皆さんはこのコンストラクタを利用・削除はしないでください
+     * 
      * @param taskDataAccess
      * @param logDataAccess
      * @param userDataAccess
@@ -39,23 +42,23 @@ public class TaskLogic {
      * @param loginUser ログインユーザー
      */
     // タスクの情報を一覧表示する
-    public void showAll(User loginUser) {
+    public void showAll(User loginUser) throws AppException {
         // findAllメソッドを実行して、データの一覧取得
         List<Task> tasks = taskDataAccess.findAll();
         // 取得したデータを表示する
-        tasks.forEach(task ->{
+        tasks.forEach(task -> {
             String status = "未着手";
-            if( task.getStatus() == 1){
+            if (task.getStatus() == 1) {
                 status = "着手中";
-            }else if(task.getStatus() == 2){
+            } else if (task.getStatus() == 2) {
                 status = "完了";
             }
-            
+
             String repUser = "あなた";
-            if(task.getRepUser().getCode() == loginUser.getCode()){
-                repUser = task.getRepUser().getName() ;
+            if (task.getRepUser().getCode() == loginUser.getCode()) {
+                repUser = task.getRepUser().getName();
             }
-            System.out.println("タスク名：" + repUser + "が担当しています" + ", ステータス: "  + status);
+            System.out.println("タスク名：" + repUser + "が担当しています" + ", ステータス: " + status);
         });
     }
 
@@ -65,21 +68,36 @@ public class TaskLogic {
      * @see com.taskapp.dataaccess.UserDataAccess#findByCode(int)
      * @see com.taskapp.dataaccess.TaskDataAccess#save(com.taskapp.model.Task)
      * @see com.taskapp.dataaccess.LogDataAccess#save(com.taskapp.model.Log)
-     * @param code タスクコード
-     * @param name タスク名
+     * @param code        タスクコード
+     * @param name        タスク名
      * @param repUserCode 担当ユーザーコード
-     * @param loginUser ログインユーザー
+     * @param loginUser   ログインユーザー
      * @throws AppException ユーザーコードが存在しない場合にスローされます
      */
     // CSVに書き込む
-    // public void save(int code, String name, int repUserCode,User loginUser)throws AppException {
+    public void save(int code, String name, int repUserCode, User loginUser) throws AppException {
 
-    //     }catch(IOException e){
-    //         e.printStackTrace();
-    //     }
-    // }
+        // // 担当者コードコードを基にユーザーデータを取得
+        User user = userDataAccess.findByCode(repUserCode);
+        if (user == null) {
+            throw new AppException("存在するユーザーコードを入力してください");
+        }
+        int status = 0;
 
+        // 入力値をtaskオブジェクトにマッピング
+        // (int code, String name, int status, User repUser)
+        Task task = new Task(code, name, status,user);
 
+        // saveメソッドを呼び出して、入力されたデータを保存
+        taskDataAccess.save(task);
+
+        // 新しくLogオブジェクトを作成
+        // Logクラス (int taskCode, int changeUserCode, int status, LocalDate changeDate)
+        Log log = new Log(code, loginUser.getCode(), status, LocalDate.now());
+        // logs.csvにデータを1件新規登録
+        logDataAccess.save(log);
+        System.out.println(task.getName() + "の登録が完了しました。");
+    }
 
     /**
      * タスクのステータスを変更します。
@@ -87,14 +105,16 @@ public class TaskLogic {
      * @see com.taskapp.dataaccess.TaskDataAccess#findByCode(int)
      * @see com.taskapp.dataaccess.TaskDataAccess#update(com.taskapp.model.Task)
      * @see com.taskapp.dataaccess.LogDataAccess#save(com.taskapp.model.Log)
-     * @param code タスクコード
-     * @param status 新しいステータス
+     * @param code      タスクコード
+     * @param status    新しいステータス
      * @param loginUser ログインユーザー
      * @throws AppException タスクコードが存在しない、またはステータスが前のステータスより1つ先でない場合にスローされます
      */
-    // public void changeStatus(int code, int status,
-    //                         User loginUser) throws AppException {
-    // }
+    public void changeStatus(int code, int status, User loginUser) throws AppException {
+        Task task = taskDataAccess.findByCode(code);
+
+        // AppExceptionの例外を書く
+    }
 
     /**
      * タスクを削除します。

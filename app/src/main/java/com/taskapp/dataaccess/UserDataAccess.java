@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import com.taskapp.exception.AppException;
 import com.taskapp.model.User;
 
 public class UserDataAccess {
@@ -62,7 +63,7 @@ public class UserDataAccess {
      * @param code 取得するユーザーのコード
      * @return 見つかったユーザー
      */
-    public User findByCode(int code) {
+    public User findByCode(int code) throws AppException {
         User user = null;
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;

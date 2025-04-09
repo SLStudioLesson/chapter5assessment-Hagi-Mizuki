@@ -4,12 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import com.taskapp.dataaccess.TaskDataAccess;
-import com.taskapp.dataaccess.UserDataAccess;
 import com.taskapp.exception.AppException;
 import com.taskapp.logic.TaskLogic;
 import com.taskapp.logic.UserLogic;
-import com.taskapp.model.Task;
 import com.taskapp.model.User;
 
 public class TaskUI {
@@ -20,10 +17,6 @@ public class TaskUI {
     private final TaskLogic taskLogic;
 
     private User loginUser;
-
-    // 追加
-    private UserDataAccess userDataAccess;
-    private TaskDataAccess taskDataAccess;
 
     public TaskUI() {
         reader = new BufferedReader(new InputStreamReader(System.in));
@@ -69,10 +62,11 @@ public class TaskUI {
                 switch (selectMenu) {
                     case "1":
                         taskLogic.showAll(loginUser);
+                        selectSubMenu();
                         break;
                     case "2":
                         // タスク新規登録
-                        inputNewInformation();
+                        inputNewInformation(loginUser);
                         break;
                     case "3":
                         System.out.println("ログアウトしました。");
@@ -95,7 +89,7 @@ public class TaskUI {
      * @see com.taskapp.logic.UserLogic#login(String, String)
      */
     // ログインに必要な入力を受け付ける
-    private  void inputLogin() {
+    private void inputLogin() {
         boolean flg = true;
         while (flg) {
             try {
@@ -124,7 +118,7 @@ public class TaskUI {
      * @see com.taskapp.logic.TaskLogic#save(int, String, int, User)
      */
     // タスクの新規登録
-    private  void inputNewInformation() throws AppException {
+    private void inputNewInformation(User loginUser)throws AppException {
         boolean flg = true;
         while (flg) {
             try {
@@ -138,10 +132,10 @@ public class TaskUI {
                     continue;
                 }
 
-                System.out.print("タスク名を入力してください");
+                System.out.print("タスク名を入力してください:");
                 String taskName = reader.readLine();
                 // タスク名は10文字以内ではない場合
-                if (taskCode.length() <= 10) {
+                if (!(taskCode.length() <= 10)) {
                     System.out.println("タスク名は10文字以内で入力してください");
                     System.out.println();
                     continue;
@@ -156,24 +150,21 @@ public class TaskUI {
                     System.out.println();
                     continue;
                 }
-                User user = userDataAccess.findByCode(Integer.parseInt(repUser));
-                // if ( user= null) {
-                //     throw new AppException("存在するユーザーコードを入力してください");
-                //     System.out.println();
-                //     continue;
-                // }
 
-                // 入力値をtaskオブジェクトにマッピング
-                // int code, String name, int status, User repUser)
-                Task task = new Task(Integer.parseInt(taskCode), taskName, status, user);
 
-                // saveメソッドを呼び出して、入力されたデータを保存
-                taskDataAccess.save(task);
-                System.out.println(taskName + "の登録が完了しました。");
+                // // // 担当者コードコードを基にユーザーデータを取得
+                // User user = userDataAccess.findByCode(Integer.parseInt(repUser));
+                // Logに保存
+                // save /int code, String name, int repUserCode, User loginUser)
+                taskLogic.save(Integer.parseInt(taskCode), taskName, Integer.parseInt(repUser), loginUser);
+                flg = false;
 
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (AppException e) {
+                System.out.println(e.getMessage());
             }
+            System.out.println();
         }
     }
 
@@ -183,8 +174,31 @@ public class TaskUI {
      * @see #inputChangeInformation()
      * @see #inputDeleteInformation()
      */
-    // public void selectSubMenu() {
-    // }
+    public void selectSubMenu() {
+        boolean flg = true;
+        while (flg) {
+            try {
+                System.out.println("以下1~2から好きな選択肢を選んでください");
+                System.out.println("1. タスクのステータス変更, 2. メインメニューに戻る");
+                System.out.print("選択: ");
+                String selectMenu = reader.readLine();
+                System.out.println();
+
+                switch (selectMenu) {
+                    case "1":
+                        break;
+                    case "2":
+                        System.out.println("メインメニューに戻ります");
+                        flg = false;
+                    default:
+                        System.out.println("選択に誤りがあります。");
+                        break;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     /**
      * ユーザーからのタスクステータス変更情報を受け取り、タスクのステータスを変更します。
@@ -192,8 +206,50 @@ public class TaskUI {
      * @see #isNumeric(String)
      * @see com.taskapp.logic.TaskLogic#changeStatus(int, int, User)
      */
-    // public void inputChangeInformation() {
-    // }
+    public void inputChangeInformation() throws AppException{
+        boolean flg = true;
+        while(flg){
+
+            try{
+                // 変更情報に必要な入力情報を求める
+                System.out.println("ステータスを変更するタスクコードを入力してください：");
+                String  taskCode = reader.readLine();
+                if(!isNumber(taskCode)){
+                    System.out.println("コードは半角の数字で入力してください");
+                    System.out.println();
+                    continue;
+                }
+                // 仕様を満たさない場合、「コードは半角の数字で入力してください」
+                System.out.print("どのステータスに変更するか選択してください。");
+                System.out.println("1. 着手中, 2. 完了");
+                System.out.print("選択肢：");
+                String changeStatus = reader.readLine();
+                if(!isNumber(changeStatus)){
+                    //  仕様を満たさない場合、「ステータスは半角の数字で入力してください」
+                    System.out.println("コードは半角の数字で入力してください");
+                    System.out.println();
+                    continue;
+                }
+                if(!(changeStatus.equals("1") || changeStatus.equals("2"))){
+                    // 「ステータスは1・2の中から選択してください」
+                    System.out.println("ステータスは1・2の中から選択してください");
+                    System.out.println();
+                    continue;
+                }
+                taskLogic.changeStatus(Integer.parseInt(taskCode), Integer.parseInt(changeStatus), loginUser);
+                flg = false;
+                // Logic.javaでAppException 入力されたタスクコードが `tasks.csv`に存在しない場合
+                //  スローするときのメッセージは「ステータスは、前のステータスより1つ先のもののみを選択してください」
+                //task Code,Name,Status,Rep_User_Code
+    
+            }catch(IOException e){
+                System.err.println();
+            }catch(AppException e){
+                System.out.println(e.getMessage());
+            }
+            System.out.println();
+        }
+    }
 
     /**
      * ユーザーからのタスク削除情報を受け取り、タスクを削除します。
@@ -212,7 +268,7 @@ public class TaskUI {
      * @return 数値であればtrue、そうでなければfalse
      */
     // 数値かどうか判定する
-    private  boolean isNumber(String inputText) {
+    private boolean isNumber(String inputText) {
         // 入力された文字列を分解し、全てが0~9の半角もしくは全角数字化どうかを判定する
         return inputText.chars().allMatch(c -> Character.isDigit((char) c));
     }
