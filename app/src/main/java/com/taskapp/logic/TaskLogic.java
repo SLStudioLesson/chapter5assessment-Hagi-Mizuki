@@ -77,7 +77,7 @@ public class TaskLogic {
     // CSVに書き込む
     public void save(int code, String name, int repUserCode, User loginUser) throws AppException {
 
-        // // 担当者コードコードを基にユーザーデータを取得
+        // // 担当者コードを基にユーザーデータを取得
         User user = userDataAccess.findByCode(repUserCode);
         if (user == null) {
             throw new AppException("存在するユーザーコードを入力してください");
@@ -119,7 +119,14 @@ public class TaskLogic {
             throw new AppException("存在するタスクコードを入力してください");
         }
             //  スローするときのメッセージは「ステータスは、前のステータスより1つ先のもののみを選択してください」
+            // 「未着手」から「完了」
             if(( task.getStatus() == 0) == (status  == 2)){
+                throw new AppException("ステータスは、前のステータスより1つ先のもののみを選択してください");
+                // 「着手中」から「着手中」
+            }else if(( task.getStatus() == 1) == (status  == 1  )){
+                throw new AppException("ステータスは、前のステータスより1つ先のもののみを選択してください");
+                // 「完了」から他のステータス
+            }else if(( task.getStatus() == 2) == (status  == 2 ||  status == 1 )){
                 throw new AppException("ステータスは、前のステータスより1つ先のもののみを選択してください");
             }
             // `tasks.csv`の該当タスクのステータスを変更後のステータスに更新
