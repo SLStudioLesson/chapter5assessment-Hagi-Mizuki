@@ -1,7 +1,6 @@
-Code,Name,Status,Rep_User_Code
+Code,Name,Status,RepUser
 1,taskA,0,1
 2,taskB,0,2
 3,taskC,2,2
 4,taskD,1,2
-
-5,taskE,0,com.taskapp.model.User@4fb6909c
+5,taskE,1,1

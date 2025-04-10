@@ -102,10 +102,10 @@ public class TaskDataAccess {
             reader.readLine();
             while ((line = reader.readLine()) != null) {
                 String[] values = line.split(",");
-                if (code != 4)
-                    continue;
-
+                // Code,Name,Status,Rep_User_Code
                 int taskCode = Integer.parseInt(values[0]);
+                if (code != taskCode)continue;
+
                 String taskName = values[1];
                 int status = Integer.parseInt(values[2]);
                 int repUserCode = Integer.parseInt(values[3]);
@@ -168,6 +168,6 @@ public class TaskDataAccess {
      * @return CSVに書き込むためのフォーマット文字列
      */
     private String createLine(Task task) {
-        return task.getCode() + "," + task.getName() + "," + task.getStatus() + "," + task.getRepUser();
+        return task.getCode() + "," + task.getName() + "," + task.getStatus() + "," + task.getRepUser().getCode();
     }
 }

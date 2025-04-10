@@ -45,7 +45,7 @@ public class TaskUI {
      * @see #selectSubMenu()
      * @see #inputNewInformation()
      */
-    public void displayMenu() throws AppException{
+    public void displayMenu() throws AppException {
         System.out.println("タスク管理アプリケーションにようこそ!!");
         inputLogin();
         // メインメニュー
@@ -118,7 +118,7 @@ public class TaskUI {
      * @see com.taskapp.logic.TaskLogic#save(int, String, int, User)
      */
     // タスクの新規登録
-    private void inputNewInformation(User loginUser)throws AppException {
+    private void inputNewInformation(User loginUser) throws AppException {
         boolean flg = true;
         while (flg) {
             try {
@@ -140,9 +140,6 @@ public class TaskUI {
                     System.out.println();
                     continue;
                 }
-
-                int status = 0;
-
                 System.out.print("担当するユーザーのコードを選択してください：");
                 String repUser = reader.readLine();
                 if (!isNumber(repUser)) {
@@ -151,11 +148,6 @@ public class TaskUI {
                     continue;
                 }
 
-
-                // // // 担当者コードコードを基にユーザーデータを取得
-                // User user = userDataAccess.findByCode(Integer.parseInt(repUser));
-                // Logに保存
-                // save /int code, String name, int repUserCode, User loginUser)
                 taskLogic.save(Integer.parseInt(taskCode), taskName, Integer.parseInt(repUser), loginUser);
                 flg = false;
 
@@ -174,7 +166,7 @@ public class TaskUI {
      * @see #inputChangeInformation()
      * @see #inputDeleteInformation()
      */
-    public void selectSubMenu() {
+    public void selectSubMenu() throws AppException {
         boolean flg = true;
         while (flg) {
             try {
@@ -186,6 +178,7 @@ public class TaskUI {
 
                 switch (selectMenu) {
                     case "1":
+                        inputChangeInformation();
                         break;
                     case "2":
                         System.out.println("メインメニューに戻ります");
@@ -206,15 +199,15 @@ public class TaskUI {
      * @see #isNumeric(String)
      * @see com.taskapp.logic.TaskLogic#changeStatus(int, int, User)
      */
-    public void inputChangeInformation() throws AppException{
+    public void inputChangeInformation() throws AppException {
         boolean flg = true;
-        while(flg){
+        while (flg) {
 
-            try{
+            try {
                 // 変更情報に必要な入力情報を求める
                 System.out.println("ステータスを変更するタスクコードを入力してください：");
-                String  taskCode = reader.readLine();
-                if(!isNumber(taskCode)){
+                String taskCode = reader.readLine();
+                if (!isNumber(taskCode)) {
                     System.out.println("コードは半角の数字で入力してください");
                     System.out.println();
                     continue;
@@ -224,13 +217,13 @@ public class TaskUI {
                 System.out.println("1. 着手中, 2. 完了");
                 System.out.print("選択肢：");
                 String changeStatus = reader.readLine();
-                if(!isNumber(changeStatus)){
-                    //  仕様を満たさない場合、「ステータスは半角の数字で入力してください」
+                if (!isNumber(changeStatus)) {
+                    // 仕様を満たさない場合、「ステータスは半角の数字で入力してください」
                     System.out.println("コードは半角の数字で入力してください");
                     System.out.println();
                     continue;
                 }
-                if(!(changeStatus.equals("1") || changeStatus.equals("2"))){
+                if (!(changeStatus.equals("1") || changeStatus.equals("2"))) {
                     // 「ステータスは1・2の中から選択してください」
                     System.out.println("ステータスは1・2の中から選択してください");
                     System.out.println();
@@ -238,13 +231,9 @@ public class TaskUI {
                 }
                 taskLogic.changeStatus(Integer.parseInt(taskCode), Integer.parseInt(changeStatus), loginUser);
                 flg = false;
-                // Logic.javaでAppException 入力されたタスクコードが `tasks.csv`に存在しない場合
-                //  スローするときのメッセージは「ステータスは、前のステータスより1つ先のもののみを選択してください」
-                //task Code,Name,Status,Rep_User_Code
-    
-            }catch(IOException e){
+            } catch (IOException e) {
                 System.err.println();
-            }catch(AppException e){
+            } catch (AppException e) {
                 System.out.println(e.getMessage());
             }
             System.out.println();

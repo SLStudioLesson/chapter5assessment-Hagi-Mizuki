@@ -54,9 +54,9 @@ public class TaskLogic {
                 status = "完了";
             }
 
-            String repUser = "あなた";
+            String repUser = task.getRepUser().getName();
             if (task.getRepUser().getCode() == loginUser.getCode()) {
-                repUser = task.getRepUser().getName();
+                repUser = "あなた";
             }
             System.out.println("タスク名：" + repUser + "が担当しています" + ", ステータス: " + status);
         });
@@ -112,8 +112,27 @@ public class TaskLogic {
      */
     public void changeStatus(int code, int status, User loginUser) throws AppException {
         Task task = taskDataAccess.findByCode(code);
-
+        
         // AppExceptionの例外を書く
+        if(task == null){
+            //入力されたタスクコードが `tasks.csv`に存在しない場合
+            throw new AppException("存在するタスクコードを入力してください");
+        }
+            //  スローするときのメッセージは「ステータスは、前のステータスより1つ先のもののみを選択してください」
+            if(( task.getStatus() == 0) == (status  == 2)){
+                throw new AppException("ステータスは、前のステータスより1つ先のもののみを選択してください");
+            }
+            // `tasks.csv`の該当タスクのステータスを変更後のステータスに更新
+            // (int code, String name, int status, User repUser)
+            Task taskUpdate = new Task(code, task.getName(), status, loginUser);
+            taskDataAccess.update(taskUpdate);
+            // `logs.csv`にデータを1件作成する
+            // (int taskCode, int changeUserCode, int status, LocalDate changeDate)
+            
+            Log log = new Log(code,  loginUser.getCode(), status,LocalDate.now());
+            logDataAccess.save(log);
+            System.out.println( task.getName() + "の変更が完了しました。");
+        
     }
 
     /**

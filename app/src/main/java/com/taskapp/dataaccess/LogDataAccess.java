@@ -30,7 +30,7 @@ public class LogDataAccess {
     public void save(Log log) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath,true))) {
             // Task_Code,Change_User_Code,Status,Change_Date
-            String line = log.getTaskCode() + "," + log.getChangeUserCode() + ", " + log.getStatus() + "," + log.getChangeDate();
+            String line =createLine(log);
             // 改行を追加
             writer.newLine();
             // データ１行分追加
@@ -74,7 +74,8 @@ public class LogDataAccess {
      * @param log フォーマットを作成するログ
      * @return CSVファイルに書き込むためのフォーマット
      */
-    // private String createLine(Log log) {
-    // }
+    private String createLine(Log log) {
+        return  log.getTaskCode() + "," + log.getChangeUserCode() + "," + log.getStatus() + "," + log.getChangeDate();
+    }
 
 }
